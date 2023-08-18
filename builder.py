@@ -8,26 +8,34 @@ import time
 #-------------------------------------------------------------------------
 #settings
 
-x_size = 64
-z_size = 64
-y_size = 3
+x_size = 512
+z_size = 512
 
 x_min = 0
 z_min = 0
-y_min = 0
+y_min = 20
+
+build_mode = 2    # 1 - set one block, 2 - set line
 
 building_folder_name = "test"
 
-enable_blacklist = True
+enable_blacklist = True # note: blacklist works only if build mode set to 1
 
 block_black_list = [
-    (255, 255, 255)
+    (255, 255, 255)#,
+    #(0, 0, 255)
 ]
 
 picture_list = [
     "1.bmp",
     "2.bmp",
-    "3.bmp"
+    "3.bmp",
+    #"4.bmp",
+    #"5.bmp",
+    #"6.bmp",
+    #"7.bmp",
+    #"8.bmp",
+    #"9.bmp"
 ]
 
 block_list = {
@@ -53,6 +61,13 @@ z = 0
 x_pos = 0
 y_pos = 0
 z_pos = 0
+x_pos1 = 0
+x_pos2 = 0
+
+x_list = []
+last_rgb = (0, 0, 0)
+
+y_size = len(picture_list)
 
 block = ""
 rgb = ""
@@ -66,47 +81,100 @@ time_stop = 0
 time_all = 0
 
 #-------------------------------------------------------------------------
+#build functions
+
+
+def setblock():
+    global x
+    global y
+    global z
+    global x_pos
+    global y_pos
+    global z_pos
+    global x_min
+    global y_min
+    global z_min
+    global verify_result
+    global verify_number
+    global block_black_list
+    global block
+    global rgb
+
+    x_pos = x_min + x
+    y_pos = y_min + y
+    z_pos = z_min + z
+
+    rgb = px[x, z]
+    block = block_list[rgb]
+
+    if enable_blacklist:
+        for verify_number in range(0, black_list_length):
+            if rgb == block_black_list[verify_number]:
+                pass
+            else:
+                verify_result = verify_result + 1
+
+        if verify_result == black_list_length:
+            mc.setBlock(x_pos, y_pos, z_pos, block)
+            verify_result = 0
+            time.sleep(0.01)
+        else:
+            verify_result = 0
+    else:
+        mc.setBlock(x_pos, y_pos, z_pos, block)
+        time.sleep(0.01)
+
+
+def setblocks():
+    global x
+    global y
+    global z
+    global x_pos1
+    global x_pos2
+    global y_pos
+    global z_pos
+    global x_min
+    global y_min
+    global z_min
+    global last_rgb
+    global x_list
+    global block
+    global rgb
+    y_pos = y_min + y
+    z_pos = z_min + z
+
+    rgb = px[x, z]
+    if rgb == last_rgb:
+        x_list.append(x)
+    else:
+        block = block_list[rgb]
+        last_rgb = rgb
+        x_pos1 = x_list[1]
+        x_pos2 = x_list[(len(x_list) - 1)]
+        mc.setBlocks(x_pos1, y_pos, z_pos, x_pos2, y_pos, z_pos, block)
+        time.sleep(0.01)
+
+
+#-------------------------------------------------------------------------
 #main program
+
 
 time_start = time.time()
 
 for y in range(0, y_size):
 
-    with Image.open("E:/minecraft-spigot_server/buildings/%s/%s" % (building_folder_name, picture_list[y])) as im:
+    with Image.open("buildings/%s/%s" % (building_folder_name, picture_list[y])) as im:
         #im.show()
         px = im.load()
 
-    y_pos = y_min + y
-
     for z in range(0, z_size):
-
-        z_pos = z_min + z
-
         for x in range(0, x_size):
-
-            x_pos = x_min + x
-
-            rgb = px[x, z]
-            block = block_list[rgb]
-
-            if enable_blacklist:
-                for verify_number in range(0, black_list_length):
-                    if rgb == block_black_list[verify_number]:
-                        pass
-                    else:
-                        verify_result = verify_result + 1
-
-                if verify_result == black_list_length:
-                    mc.setBlock(x_pos, y_pos, z_pos, block)
-                    verify_result = 0
-                    time.sleep(0.01)
-                else:
-                    verify_result = 0
+            if build_mode == 1:
+                setblock()
+            elif build_mode == 2:
+                setblocks()
             else:
-                mc.setBlock(x_pos, y_pos, z_pos, block)
-                time.sleep(0.01)
-
-            #print("set %s at X = %s, Y = %s, Z = %s" % (block, x_pos, y_pos, z_pos))
+                print('''check and correct 'build_mode' parameter''')
 
 time_stop = time.time()
 time_all = time_stop - time_start
