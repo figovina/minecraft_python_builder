@@ -8,8 +8,8 @@ import time
 #-------------------------------------------------------------------------
 #settings
 
-x_size = 512
-z_size = 512
+x_size = 64
+z_size = 64
 
 x_min = 0
 z_min = 0
@@ -22,20 +22,13 @@ building_folder_name = "test"
 enable_blacklist = True # note: blacklist works only if build mode set to 1
 
 block_black_list = [
-    (255, 255, 255)#,
-    #(0, 0, 255)
+    (255, 255, 255)
 ]
 
 picture_list = [
     "1.bmp",
     "2.bmp",
-    "3.bmp",
-    #"4.bmp",
-    #"5.bmp",
-    #"6.bmp",
-    #"7.bmp",
-    #"8.bmp",
-    #"9.bmp"
+    "3.bmp"
 ]
 
 block_list = {
@@ -152,6 +145,7 @@ def setblocks():
         x_pos1 = x_list[1]
         x_pos2 = x_list[(len(x_list) - 1)]
         mc.setBlocks(x_pos1, y_pos, z_pos, x_pos2, y_pos, z_pos, block)
+        x_list = []
         time.sleep(0.01)
 
 
