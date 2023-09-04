@@ -13,16 +13,19 @@ z_size = 64
 
 x_min = 0
 z_min = 0
-y_min = 20
+y_min = 0
 
-build_mode = 2    # 1 - set one block, 2 - set line
+build_mode = 1    # 1 - set one block, 2 - set line
 
 building_folder_name = "test"
 
 enable_blacklist = True # note: blacklist works only if build mode set to 1
 
+sleep_time = 1 # in seconds. change at your own risk. note: works only if build mode set to 2
+
 block_black_list = [
-    (255, 255, 255)
+    (255, 255, 255)#,
+    #(0, 0, 255)
 ]
 
 picture_list = [
@@ -56,6 +59,7 @@ y_pos = 0
 z_pos = 0
 x_pos1 = 0
 x_pos2 = 0
+x_comp = x_size - 1
 
 x_list = []
 last_rgb = (0, 0, 0)
@@ -133,20 +137,33 @@ def setblocks():
     global x_list
     global block
     global rgb
+    global x_comp
+    global sleep_time
+
     y_pos = y_min + y
     z_pos = z_min + z
 
     rgb = px[x, z]
-    if rgb == last_rgb:
+
+    if rgb == last_rgb and x < x_comp:
         x_list.append(x)
     else:
-        block = block_list[rgb]
+        block = block_list[last_rgb]
+
         last_rgb = rgb
-        x_pos1 = x_list[1]
-        x_pos2 = x_list[(len(x_list) - 1)]
-        mc.setBlocks(x_pos1, y_pos, z_pos, x_pos2, y_pos, z_pos, block)
-        x_list = []
-        time.sleep(0.01)
+        if x_list == []:
+            x_pos1 = x_min + x
+            x_pos2 = x_min + x
+            mc.setBlocks(x_pos1, y_pos, z_pos, x_pos2, y_pos, z_pos, block)
+            x_list = []
+            time.sleep(sleep_time)
+        else:
+            x_pos1 = x_min + x_list[0]
+            x_pos2 = x_min + x_list[(len(x_list) - 1)] + 1
+            mc.setBlocks(x_pos1, y_pos, z_pos, x_pos2, y_pos, z_pos, block)
+            x_list = []
+            time.sleep(sleep_time)
+        return block
 
 
 #-------------------------------------------------------------------------
@@ -163,10 +180,12 @@ for y in range(0, y_size):
 
     for z in range(0, z_size):
         for x in range(0, x_size):
+
             if build_mode == 1:
                 setblock()
             elif build_mode == 2:
                 setblocks()
+
             else:
                 print('''check and correct 'build_mode' parameter''')
 
